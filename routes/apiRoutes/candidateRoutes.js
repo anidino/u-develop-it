@@ -3,10 +3,8 @@ const router = express.Router();
 const db = require('../../db/connection');
 const inputCheck = require('../../utils/inputCheck');
 
-
-// originally app.get('/api/candidates')
+// Get all candidates and their party affiliation
 router.get('/candidates', (req, res) => {
-    // internal logic remains the same
     const sql = `SELECT candidates.*, parties.name 
                 AS party_name 
                 FROM candidates 
@@ -25,8 +23,7 @@ router.get('/candidates', (req, res) => {
     });
 });
 
-
-// originally app.get('/api/candidate/:id')
+// Get single candidate with party affiliation
 router.get('/candidate/:id', (req, res) => {
     const sql = `SELECT candidates.*, parties.name 
                AS party_name 
@@ -48,8 +45,7 @@ router.get('/candidate/:id', (req, res) => {
     });
 });
 
-
-// originally app.post('/api/candidate')
+// Create a candidate
 router.post('/candidate', ({ body }, res) => {
     const errors = inputCheck(
         body,
@@ -77,15 +73,13 @@ router.post('/candidate', ({ body }, res) => {
         }
         res.json({
             message: 'success',
-            data: body,
-            changes: result.affectedRows
+            data: body
         });
     });
 });
 
-// originally app.put('/api/candidate/:id')
+// Update a candidate's party
 router.put('/candidate/:id', (req, res) => {
-    // Candidate is allowed to not have party affiliation
     const errors = inputCheck(req.body, 'party_id');
     if (errors) {
         res.status(400).json({ error: errors });
@@ -95,10 +89,10 @@ router.put('/candidate/:id', (req, res) => {
     const sql = `UPDATE candidates SET party_id = ? 
                WHERE id = ?`;
     const params = [req.body.party_id, req.params.id];
+
     db.query(sql, params, (err, result) => {
         if (err) {
             res.status(400).json({ error: err.message });
-            // check if a record was found
         } else if (!result.affectedRows) {
             res.json({
                 message: 'Candidate not found'
@@ -113,14 +107,14 @@ router.put('/candidate/:id', (req, res) => {
     });
 });
 
-
-// originally app.delete('/api/candidate/:id')
+// Delete a candidate
 router.delete('/candidate/:id', (req, res) => {
     const sql = `DELETE FROM candidates WHERE id = ?`;
     const params = [req.params.id];
+
     db.query(sql, params, (err, result) => {
         if (err) {
-            res.statusMessage(400).json({ error: res.message });
+            res.status(400).json({ error: res.message });
         } else if (!result.affectedRows) {
             res.json({
                 message: 'Candidate not found'
@@ -134,6 +128,5 @@ router.delete('/candidate/:id', (req, res) => {
         }
     });
 });
-
 
 module.exports = router;
